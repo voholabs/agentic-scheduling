@@ -1,3 +1,12 @@
-[phases.setup]
-    nixPkgs = ['nodejs', 'python3']
-    aptPkgs = ['build-essential', 'libudev-dev']
+# Voholabs self-hosted deploy — build the single-container image from the
+# Postiz production Dockerfile (nginx :5000 -> frontend :4200 + backend :3000,
+# all Node processes under pm2, prisma migrations run on boot).
+# Set the service target port to 5000 in Railway → Settings → Networking.
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile.dev"
+
+[deploy]
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
