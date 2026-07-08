@@ -680,9 +680,27 @@ export const AddProviderComponent: FC<{
 
   const t = useT();
 
+  const filteredSocial = social.filter((item) => {
+    if (!props.invite) {
+      return true;
+    }
+    return (
+      !item.isExternal &&
+      !item.isWeb3 &&
+      !item.isChromeExtension &&
+      !item.customFields
+    );
+  });
+  const enabledSocial = filteredSocial.filter((item) =>
+    ENABLED_PROVIDERS.includes(item.identifier)
+  );
+  const comingSoonSocial = filteredSocial.filter(
+    (item) => !ENABLED_PROVIDERS.includes(item.identifier)
+  );
+
   return (
     <div className="w-full flex flex-col gap-[20px] rounded-[4px] relative]">
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-[20px]">
         <div
           className={clsx(
             isMobile && 'gap-[20px] flex flex-col',
@@ -691,37 +709,18 @@ export const AddProviderComponent: FC<{
             isMobile ? {} : onboarding ? 'grid-cols-9' : 'grid-cols-5'
           )}
         >
-          {social
-            .filter((item) => {
-              if (!props.invite) {
-                return true;
-              }
-
-              return (
-                !item.isExternal &&
-                !item.isWeb3 &&
-                !item.isChromeExtension &&
-                !item.customFields
-              );
-            })
-            .map((item) => {
-              const comingSoon = !ENABLED_PROVIDERS.includes(item.identifier);
-              return (
+          {enabledSocial.map((item) => (
               <div
                 key={item.identifier}
-                onClick={
-                  comingSoon
-                    ? undefined
-                    : getSocialLink(
-                        props.invite,
-                        item.identifier,
-                        item.isExternal,
-                        item.isWeb3,
-                        item.isChromeExtension,
-                        item.customFields
-                      )
-                }
-                {...(!comingSoon && !!item.toolTip
+                onClick={getSocialLink(
+                  props.invite,
+                  item.identifier,
+                  item.isExternal,
+                  item.isWeb3,
+                  item.isChromeExtension,
+                  item.customFields
+                )}
+                {...(!!item.toolTip
                   ? {
                       'data-tooltip-id': 'tooltip',
                       'data-tooltip-content': item.toolTip,
@@ -731,17 +730,9 @@ export const AddProviderComponent: FC<{
                   isMobile
                     ? 'flex-row h-[72px] p-[16px]'
                     : 'flex-col p-[10px] h-[100px] justify-center',
-                  'w-full text-[14px] rounded-[8px] bg-newTableHeader text-textColor relative items-center flex gap-[10px]',
-                  comingSoon
-                    ? 'opacity-40 grayscale cursor-not-allowed'
-                    : 'cursor-pointer'
+                  'w-full text-[14px] rounded-[8px] bg-newTableHeader text-textColor relative items-center flex gap-[10px] cursor-pointer'
                 )}
               >
-                {comingSoon && (
-                  <div className="absolute top-[6px] end-[6px] z-[1] text-[9px] leading-none uppercase tracking-wide rounded-full px-[6px] py-[3px] bg-textColor/15 text-textColor/80">
-                    {t('coming_soon', 'Coming soon')}
-                  </div>
-                )}
                 <div>
                   {item.identifier === 'youtube' ? (
                     <img src={`/icons/platforms/youtube.svg`} />
@@ -763,7 +754,7 @@ export const AddProviderComponent: FC<{
                   )}
                 >
                   {item.name}
-                  {!comingSoon && !!item.toolTip && !isMobile && (
+                  {!!item.toolTip && !isMobile && (
                     <svg
                       width="15"
                       height="15"
@@ -780,9 +771,58 @@ export const AddProviderComponent: FC<{
                   )}
                 </div>
               </div>
-              );
-            })}
+            ))}
         </div>
+        {comingSoonSocial.length > 0 && (
+          <div className="flex flex-col gap-[10px]">
+            <div className="text-[12px] font-[500] uppercase tracking-[0.08em] text-textColor/50">
+              {t('coming_soon', 'Coming soon')}
+            </div>
+            <div
+              className={clsx(
+                isMobile && 'gap-[20px] flex flex-col',
+                !isMobile &&
+                  'grid grid-cols-5 gap-[10px] justify-items-center justify-center',
+                isMobile ? {} : onboarding ? 'grid-cols-9' : 'grid-cols-5'
+              )}
+            >
+              {comingSoonSocial.map((item) => (
+                <div
+                  key={item.identifier}
+                  className={clsx(
+                    isMobile
+                      ? 'flex-row h-[72px] p-[16px]'
+                      : 'flex-col p-[10px] h-[100px] justify-center',
+                    'w-full text-[14px] rounded-[8px] bg-newTableHeader text-textColor relative items-center flex gap-[10px] opacity-40 grayscale cursor-default'
+                  )}
+                >
+                  <div>
+                    {item.identifier === 'youtube' ? (
+                      <img src={`/icons/platforms/youtube.svg`} />
+                    ) : (
+                      <img
+                        className={clsx(
+                          'w-[32px] h-[32px]',
+                          item.identifier !== 'google_my_business' &&
+                            'rounded-full'
+                        )}
+                        src={`/icons/platforms/${item.identifier}.png`}
+                      />
+                    )}
+                  </div>
+                  <div
+                    className={clsx(
+                      isMobile ? '' : 'whitespace-pre-wrap',
+                      'text-center'
+                    )}
+                  >
+                    {item.name}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
