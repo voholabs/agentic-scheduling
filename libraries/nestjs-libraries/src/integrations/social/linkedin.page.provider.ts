@@ -25,11 +25,12 @@ export class LinkedinPageProvider
   override isBetweenSteps = true;
   override refreshWait = true;
   override maxConcurrentJob = 2; // LinkedIn Page has professional posting limits
+  // Company page posting uses a dedicated app that has ONLY the Community
+  // Management API product, which grants just the organization scopes. It has no
+  // Sign In / Share products, so openid/profile/w_member_social are not available
+  // here (requesting them would fail the authorization). Member identity is
+  // therefore derived from the administered organizations, not /v2/userinfo.
   override scopes = [
-    'openid',
-    'profile',
-    'w_member_social',
-    'r_basicprofile',
     'rw_organization_admin',
     'w_organization_social',
     'r_organization_social',
@@ -53,40 +54,29 @@ export class LinkedinPageProvider
         body: new URLSearchParams({
           grant_type: 'refresh_token',
           refresh_token,
-          client_id: process.env.LINKEDIN_CLIENT_ID!,
-          client_secret: process.env.LINKEDIN_CLIENT_SECRET!,
+          client_id: process.env.LINKEDIN_PAGE_CLIENT_ID!,
+          client_secret: process.env.LINKEDIN_PAGE_CLIENT_SECRET!,
         }),
       })
     ).json();
 
-    const { vanityName } = await (
-      await fetch('https://api.linkedin.com/v2/me', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-    ).json();
-
-    const {
-      name,
-      sub: id,
-      picture,
-    } = await (
-      await fetch('https://api.linkedin.com/v2/userinfo', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-    ).json();
+    // No openid/profile scope on the Community-Management-only app, so identify
+    // the account from the organizations it administers instead of /v2/userinfo.
+    const [primary] = await this.companies(accessToken);
+    if (!primary) {
+      throw new Error(
+        'No administered LinkedIn Page found while refreshing the token.'
+      );
+    }
 
     return {
-      id,
+      id: primary.id,
       accessToken,
       refreshToken,
       expiresIn: expires_in,
-      name,
-      picture,
-      username: vanityName,
+      name: primary.name,
+      picture: primary.picture || '',
+      username: primary.username,
     };
   }
 
@@ -124,7 +114,7 @@ export class LinkedinPageProvider
     const state = makeId(6);
     const codeVerifier = makeId(30);
     const url = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&prompt=none&client_id=${
-      process.env.LINKEDIN_CLIENT_ID
+      process.env.LINKEDIN_PAGE_CLIENT_ID
     }&redirect_uri=${encodeURIComponent(
       `${process.env.FRONTEND_URL}/integrations/social/linkedin-page`
     )}&state=${state}&scope=${encodeURIComponent(this.scopes.join(' '))}`;
@@ -213,8 +203,8 @@ export class LinkedinPageProvider
       'redirect_uri',
       `${process.env.FRONTEND_URL}/integrations/social/linkedin-page`
     );
-    body.append('client_id', process.env.LINKEDIN_CLIENT_ID!);
-    body.append('client_secret', process.env.LINKEDIN_CLIENT_SECRET!);
+    body.append('client_id', process.env.LINKEDIN_PAGE_CLIENT_ID!);
+    body.append('client_secret', process.env.LINKEDIN_PAGE_CLIENT_SECRET!);
 
     const {
       access_token: accessToken,
@@ -233,34 +223,25 @@ export class LinkedinPageProvider
 
     this.checkScopes(this.scopes, scope);
 
-    const {
-      name,
-      sub: id,
-      picture,
-    } = await (
-      await fetch('https://api.linkedin.com/v2/userinfo', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-    ).json();
-
-    const { vanityName } = await (
-      await fetch('https://api.linkedin.com/v2/me', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-    ).json();
+    // The Community-Management-only app has no openid/profile scope, so
+    // /v2/userinfo and /v2/me are forbidden. Seed identity from the organizations
+    // this member administers; the between-steps page picker (companies()) then
+    // selects the target page.
+    const [primary] = await this.companies(accessToken);
+    if (!primary) {
+      throw new Error(
+        'No LinkedIn Page found for this account. You must be an administrator of at least one LinkedIn Page.'
+      );
+    }
 
     return {
-      id: id,
+      id: primary.id,
       accessToken,
       refreshToken,
       expiresIn,
-      name,
-      picture,
-      username: vanityName,
+      name: primary.name,
+      picture: primary.picture || '',
+      username: primary.username,
     };
   }
 

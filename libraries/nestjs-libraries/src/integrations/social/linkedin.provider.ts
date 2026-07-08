@@ -31,15 +31,12 @@ export class LinkedinProvider extends SocialAbstract implements SocialProvider {
   oneTimeToken = true;
 
   isBetweenSteps = false;
-  scopes = [
-    'openid',
-    'profile',
-    'w_member_social',
-    'r_basicprofile',
-    'rw_organization_admin',
-    'w_organization_social',
-    'r_organization_social',
-  ];
+  // Personal profile posting only. This connector's app has just the Sign In
+  // (OpenID Connect) and Share on LinkedIn products, so it must not request the
+  // organization scopes: LinkedIn rejects the whole authorization for any scope
+  // the app is not provisioned for. Page posting lives in LinkedinPageProvider,
+  // which uses its own Community-Management-only app.
+  scopes = ['openid', 'profile', 'w_member_social'];
   override maxConcurrentJob = 2;
   refreshWait = true;
   editor = 'normal' as const;
