@@ -357,8 +357,8 @@ export const TopMenu: FC = () => {
                   />
                 ))}
                 {firstComingSoon.length > 0 && (
-                  <div className="flex flex-col minCustom:gap-[16px] custom:gap-[8px]">
-                    <div className="text-[9px] uppercase tracking-[0.08em] text-textItemBlur/60 text-center leading-[1.1]">
+                  <div className="flex flex-col minCustom:gap-[16px] custom:gap-[8px] minCustom:mt-[12px] custom:mt-[6px]">
+                    <div className="text-[8px] uppercase tracking-[0.06em] text-textItemFocused text-center leading-none whitespace-nowrap">
                       Coming soon
                     </div>
                     {firstComingSoon.map((item) => (
