@@ -21,6 +21,17 @@ import copy from 'copy-to-clipboard';
 import { capitalize } from 'lodash';
 const resolver = classValidatorResolver(ApiKeyDto);
 
+// Channels we currently support connecting. Everything else is shown as
+// "Coming soon" and is not clickable until its OAuth app is configured.
+const ENABLED_PROVIDERS = [
+  'youtube',
+  'facebook',
+  'linkedin',
+  'linkedin-page',
+  'x',
+  'threads',
+];
+
 export const useAddProvider = (update?: () => void, invite?: boolean) => {
   const modal = useModals();
   const fetch = useFetch();
@@ -693,18 +704,24 @@ export const AddProviderComponent: FC<{
                 !item.customFields
               );
             })
-            .map((item) => (
+            .map((item) => {
+              const comingSoon = !ENABLED_PROVIDERS.includes(item.identifier);
+              return (
               <div
                 key={item.identifier}
-                onClick={getSocialLink(
-                  props.invite,
-                  item.identifier,
-                  item.isExternal,
-                  item.isWeb3,
-                  item.isChromeExtension,
-                  item.customFields
-                )}
-                {...(!!item.toolTip
+                onClick={
+                  comingSoon
+                    ? undefined
+                    : getSocialLink(
+                        props.invite,
+                        item.identifier,
+                        item.isExternal,
+                        item.isWeb3,
+                        item.isChromeExtension,
+                        item.customFields
+                      )
+                }
+                {...(!comingSoon && !!item.toolTip
                   ? {
                       'data-tooltip-id': 'tooltip',
                       'data-tooltip-content': item.toolTip,
@@ -714,9 +731,17 @@ export const AddProviderComponent: FC<{
                   isMobile
                     ? 'flex-row h-[72px] p-[16px]'
                     : 'flex-col p-[10px] h-[100px] justify-center',
-                  'w-full text-[14px] rounded-[8px] bg-newTableHeader text-textColor relative items-center flex gap-[10px] cursor-pointer'
+                  'w-full text-[14px] rounded-[8px] bg-newTableHeader text-textColor relative items-center flex gap-[10px]',
+                  comingSoon
+                    ? 'opacity-40 grayscale cursor-not-allowed'
+                    : 'cursor-pointer'
                 )}
               >
+                {comingSoon && (
+                  <div className="absolute top-[6px] end-[6px] z-[1] text-[9px] leading-none uppercase tracking-wide rounded-full px-[6px] py-[3px] bg-textColor/15 text-textColor/80">
+                    {t('coming_soon', 'Coming soon')}
+                  </div>
+                )}
                 <div>
                   {item.identifier === 'youtube' ? (
                     <img src={`/icons/platforms/youtube.svg`} />
@@ -738,7 +763,7 @@ export const AddProviderComponent: FC<{
                   )}
                 >
                   {item.name}
-                  {!!item.toolTip && !isMobile && (
+                  {!comingSoon && !!item.toolTip && !isMobile && (
                     <svg
                       width="15"
                       height="15"
@@ -755,7 +780,8 @@ export const AddProviderComponent: FC<{
                   )}
                 </div>
               </div>
-            ))}
+              );
+            })}
         </div>
       </div>
     </div>
