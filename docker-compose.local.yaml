@@ -1,0 +1,59 @@
+# Local preview of the Voholabs-rebranded build.
+# Builds the single-container image from Dockerfile.dev and runs it with
+# Postgres + Redis. Visit http://localhost:5000
+#   docker compose -f docker-compose.local.yaml up --build
+# Not for production. JWT secret here is a throwaway dev value.
+
+services:
+  voholabs-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        NEXT_PUBLIC_VERSION: local
+    container_name: voholabs-app
+    restart: unless-stopped
+    depends_on:
+      - voholabs-postgres
+      - voholabs-redis
+    ports:
+      - '5000:5000'
+    volumes:
+      - voholabs-uploads:/uploads
+    environment:
+      IS_GENERAL: 'true'
+      DATABASE_URL: 'postgresql://voholabs:voholabs-local-pwd@voholabs-postgres:5432/voholabs-db'
+      REDIS_URL: 'redis://voholabs-redis:6379'
+      JWT_SECRET: 'local-dev-only-not-secret-change-me-0123456789abcdef'
+      MAIN_URL: 'http://localhost:5000'
+      FRONTEND_URL: 'http://localhost:5000'
+      NEXT_PUBLIC_BACKEND_URL: 'http://localhost:5000/api'
+      BACKEND_INTERNAL_URL: 'http://localhost:3000'
+      STORAGE_PROVIDER: 'local'
+      UPLOAD_DIRECTORY: '/uploads'
+      NEXT_PUBLIC_UPLOAD_STATIC_DIRECTORY: '/uploads'
+      DISABLE_REGISTRATION: 'false'
+
+  voholabs-postgres:
+    image: postgres:17-alpine
+    container_name: voholabs-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: voholabs
+      POSTGRES_PASSWORD: voholabs-local-pwd
+      POSTGRES_DB: voholabs-db
+    volumes:
+      - voholabs-postgres-data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+
+  voholabs-redis:
+    image: redis:7.2
+    container_name: voholabs-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+
+volumes:
+  voholabs-uploads:
+  voholabs-postgres-data:
