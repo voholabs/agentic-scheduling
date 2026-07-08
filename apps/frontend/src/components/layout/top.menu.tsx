@@ -16,6 +16,7 @@ interface MenuItemInterface {
   hide?: boolean;
   requireBilling?: boolean;
   onClick?: () => void;
+  comingSoon?: boolean;
 }
 
 export const useMenuItem = () => {
@@ -71,6 +72,7 @@ export const useMenuItem = () => {
         </svg>
       ),
       path: '/agents',
+      comingSoon: true,
     },
     {
       name: t('analytics', 'Analytics'),
@@ -155,6 +157,7 @@ export const useMenuItem = () => {
         </svg>
       ),
       path: '/third-party',
+      comingSoon: true,
     },
   ] satisfies MenuItemInterface[] as MenuItemInterface[];
 
@@ -315,6 +318,26 @@ export const TopMenu: FC = () => {
   const user = useUser();
   const { firstMenu, secondMenu } = useMenuItem();
   const { isGeneral, billingEnabled } = useVariables();
+
+  const menuVisible = (f: MenuItemInterface) => {
+    if (f.hide) {
+      return false;
+    }
+    if (f.requireBilling && !billingEnabled) {
+      return false;
+    }
+    if (f.name === 'Billing' && user?.isLifetime) {
+      return false;
+    }
+    if (f.role) {
+      return f.role.includes(user?.role!);
+    }
+    return true;
+  };
+  const visibleFirst = firstMenu.filter(menuVisible);
+  const firstActive = visibleFirst.filter((f) => !f.comingSoon);
+  const firstComingSoon = visibleFirst.filter((f) => f.comingSoon);
+
   return (
     <>
       <div className="flex flex-1 flex-col minCustom:gap-[16px] blurMe">
@@ -322,32 +345,35 @@ export const TopMenu: FC = () => {
           // @ts-ignore
           user?.orgId &&
             // @ts-ignore
-            (user.tier !== 'FREE' || !isGeneral || !billingEnabled) &&
-            firstMenu
-              .filter((f) => {
-                if (f.hide) {
-                  return false;
-                }
-                if (f.requireBilling && !billingEnabled) {
-                  return false;
-                }
-                if (f.name === 'Billing' && user?.isLifetime) {
-                  return false;
-                }
-                if (f.role) {
-                  return f.role.includes(user?.role!);
-                }
-                return true;
-              })
-              .map((item, index) => (
-                <MenuItem
-                  path={item.path}
-                  label={item.name}
-                  icon={item.icon}
-                  key={item.name}
-                  onClick={item.onClick}
-                />
-              ))
+            (user.tier !== 'FREE' || !isGeneral || !billingEnabled) && (
+              <>
+                {firstActive.map((item) => (
+                  <MenuItem
+                    path={item.path}
+                    label={item.name}
+                    icon={item.icon}
+                    key={item.name}
+                    onClick={item.onClick}
+                  />
+                ))}
+                {firstComingSoon.length > 0 && (
+                  <div className="flex flex-col minCustom:gap-[16px] custom:gap-[8px]">
+                    <div className="text-[9px] uppercase tracking-[0.08em] text-textItemBlur/60 text-center leading-[1.1]">
+                      Coming soon
+                    </div>
+                    {firstComingSoon.map((item) => (
+                      <MenuItem
+                        path={item.path}
+                        label={item.name}
+                        icon={item.icon}
+                        key={item.name}
+                        comingSoon
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            )
         }
       </div>
       <div className="flex flex-col minCustom:gap-[20px] custom:gap-[8px] blurMe">
