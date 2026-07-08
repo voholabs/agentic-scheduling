@@ -113,7 +113,11 @@ export class IntegrationService {
     const uploadedPicture = picture
       ? picture?.indexOf('imagedelivery.net') > -1
         ? picture
-        : await this.storage.uploadSimple(picture)
+        : // Re-uploading the avatar is best-effort: a broken/expired/dead
+          // picture URL (e.g. a 404'd /uploads asset) must not throw
+          // "Unsupported file type." and abort a token refresh or channel
+          // save. Fall back to the existing picture URL on any failure.
+          await this.storage.uploadSimple(picture).catch(() => picture)
       : undefined;
 
     return this._integrationRepository.createOrUpdateIntegration(
@@ -346,40 +350,40 @@ export class IntegrationService {
       getIntegration.providerIdentifier
     );
 
-    if (
-      dayjs(getIntegration?.tokenExpiration).isBefore(dayjs()) ||
-      forceRefresh
-    ) {
-      const data = await this._refreshIntegrationService.refresh(
-        getIntegration
-      );
-      if (!data) {
-        return [];
-      }
-
-      const { accessToken } = data;
-
-      if (accessToken) {
-        getIntegration.token = accessToken;
-
-        if (integrationProvider.refreshWait) {
-          await timer(10000);
+    try {
+      if (
+        dayjs(getIntegration?.tokenExpiration).isBefore(dayjs()) ||
+        forceRefresh
+      ) {
+        const data = await this._refreshIntegrationService.refresh(
+          getIntegration
+        );
+        if (!data) {
+          return [];
         }
-      } else {
-        await this.disconnectChannel(org.id, getIntegration);
-        return [];
+
+        const { accessToken } = data;
+
+        if (accessToken) {
+          getIntegration.token = accessToken;
+
+          if (integrationProvider.refreshWait) {
+            await timer(10000);
+          }
+        } else {
+          await this.disconnectChannel(org.id, getIntegration);
+          return [];
+        }
       }
-    }
 
-    const getIntegrationData = await ioRedis.get(
-      `integration:${org.id}:${integration}:${date}`
-    );
-    if (getIntegrationData) {
-      return JSON.parse(getIntegrationData);
-    }
+      const getIntegrationData = await ioRedis.get(
+        `integration:${org.id}:${integration}:${date}`
+      );
+      if (getIntegrationData) {
+        return JSON.parse(getIntegrationData);
+      }
 
-    if (integrationProvider.analytics) {
-      try {
+      if (integrationProvider.analytics) {
         const loadAnalytics = await integrationProvider.analytics(
           getIntegration.internalId,
           getIntegration.token,
@@ -394,14 +398,25 @@ export class IntegrationService {
             : 3600
         );
         return loadAnalytics;
-      } catch (e) {
-        if (e instanceof RefreshToken) {
-          return this.checkAnalytics(org, integration, date, true);
-        }
       }
-    }
 
-    return [];
+      return [];
+    } catch (e) {
+      // A RefreshToken error means the access token expired mid-request; retry
+      // once with a forced refresh. Guard against infinite recursion.
+      if (e instanceof RefreshToken && !forceRefresh) {
+        return this.checkAnalytics(org, integration, date, true);
+      }
+
+      // Any other failure (token refresh error, provider outage, bad response)
+      // must not 500 the whole analytics page - degrade to empty analytics for
+      // this single channel and surface the real cause in the logs.
+      console.error(
+        `Analytics failed for integration ${integration} (${getIntegration.providerIdentifier}):`,
+        e
+      );
+      return [];
+    }
   }
 
   customers(orgId: string) {

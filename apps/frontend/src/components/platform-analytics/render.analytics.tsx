@@ -216,17 +216,25 @@ export const RenderAnalytics: FC<{
 
   const t = useT();
 
+  // The endpoint normally returns an array, but on an error response (e.g. a
+  // 500) the body is an object - coerce to an array so a single failing
+  // channel never crashes the whole analytics page.
+  const items: AnalyticsDataItem[] = useMemo(
+    () => (Array.isArray(data) ? data : []),
+    [data]
+  );
+
   const totals = useMemo(() => {
-    return data?.map((p: AnalyticsDataItem) => {
+    return items.map((p: AnalyticsDataItem) => {
       const value =
-        (p?.data.reduce((acc: number, curr: { total: number }) => acc + curr.total, 0) || 0) /
-        (p.average ? p.data.length : 1);
+        (p?.data?.reduce((acc: number, curr: { total: number }) => acc + curr.total, 0) || 0) /
+        (p.average ? p.data?.length || 1 : 1);
       if (p.average) {
         return value.toFixed(2) + '%';
       }
       return new Intl.NumberFormat().format(Math.round(value));
     });
-  }, [data]);
+  }, [items]);
 
   if (loading) {
     return (
@@ -238,10 +246,10 @@ export const RenderAnalytics: FC<{
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[16px]">
-      {data?.length === 0 && (
+      {items.length === 0 && (
         <EmptyState onRefresh={refreshChannel(integration as any)} />
       )}
-      {data?.map((item: AnalyticsDataItem, index: number) => (
+      {items.map((item: AnalyticsDataItem, index: number) => (
         <AnalyticsCard
           key={`analytics-${index}`}
           item={item}
