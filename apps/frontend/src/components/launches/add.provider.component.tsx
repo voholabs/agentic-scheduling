@@ -26,6 +26,7 @@ const resolver = classValidatorResolver(ApiKeyDto);
 const ENABLED_PROVIDERS = [
   'youtube',
   'facebook',
+  'instagram',
   'linkedin',
   'linkedin-page',
   'x',
