@@ -364,45 +364,41 @@ const McpSection = ({
 const localCliSteps = [
   {
     label: 'Install the CLI',
-    code: 'npm install -g postiz',
+    code: 'npm install -g github:voholabs/voholabs-studio-cli',
   },
   {
-    label: 'Run: postiz auth:login',
-    code: 'postiz auth:login --auth-server {AUTH_SERVER}',
+    label: 'Run: voholabs auth:login',
+    code: 'voholabs auth:login',
   },
   {
     label: 'Install the Voholabs skill for your AI agent',
-    code: 'npx skills add gitroomhq/postiz-agent',
+    code: 'npx skills add voholabs/voholabs-studio-cli',
   },
 ] as const;
 
 const ciCliSteps = [
   {
     label: 'Install the CLI',
-    code: 'npm install -g postiz',
+    code: 'npm install -g github:voholabs/voholabs-studio-cli',
   },
   {
     label: 'Set your API key as an environment variable',
-    code: 'export POSTIZ_API_KEY="{API_KEY}"',
+    code: 'export VOHOLABS_API_KEY="{API_KEY}"',
   },
   {
     label: 'Install the Voholabs skill for your AI agent',
-    code: 'npx skills add gitroomhq/postiz-agent',
+    code: 'npx skills add voholabs/voholabs-studio-cli',
   },
 ] as const;
 
 const CliSection = ({ apiKey }: { apiKey: string }) => {
   const t = useT();
-  const { mcpUrl } = useVariables();
   const [mode, setMode] = useState<'local' | 'ci'>('local');
   const [revealed, setRevealed] = useState(false);
 
   const steps =
     mode === 'local'
-      ? localCliSteps.map((step) => ({
-          ...step,
-          code: step.code.replace('{AUTH_SERVER}', mcpUrl || ''),
-        }))
+      ? localCliSteps.map((step) => ({ ...step }))
       : ciCliSteps.map((step) => ({
           ...step,
           code: step.code.replace('{API_KEY}', apiKey),
