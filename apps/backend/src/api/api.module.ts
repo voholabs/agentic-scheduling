@@ -35,6 +35,8 @@ import { EnterpriseController } from '@gitroom/backend/api/routes/enterprise.con
 import { OAuthAppController } from '@gitroom/backend/api/routes/oauth-app.controller';
 import { ApprovedAppsController } from '@gitroom/backend/api/routes/approved-apps.controller';
 import { OAuthController, OAuthAuthorizedController } from '@gitroom/backend/api/routes/oauth.controller';
+import { DeviceController, DeviceAuthorizedController } from '@gitroom/backend/api/routes/device.controller';
+import { DeviceAuthService } from '@gitroom/nestjs-libraries/database/prisma/device/device.auth.service';
 import { AnnouncementsController } from '@gitroom/backend/api/routes/announcements.controller';
 import { AdminController } from '@gitroom/backend/api/routes/admin.controller';
 import { AuthProviderManager } from '@gitroom/backend/services/auth/providers/providers.manager';
@@ -62,6 +64,7 @@ const authenticatedController = [
   OAuthAppController,
   ApprovedAppsController,
   OAuthAuthorizedController,
+  DeviceAuthorizedController,
   AnnouncementsController,
   AdminController,
 ];
@@ -76,6 +79,7 @@ const authenticatedController = [
     EnterpriseController,
     NoAuthIntegrationsController,
     OAuthController,
+    DeviceController,
     ...authenticatedController,
   ],
   providers: [
@@ -83,6 +87,7 @@ const authenticatedController = [
     StripeService,
     OpenaiService,
     ExtractContentService,
+    DeviceAuthService,
     AuthMiddleware,
     PoliciesGuard,
     PermissionsService,

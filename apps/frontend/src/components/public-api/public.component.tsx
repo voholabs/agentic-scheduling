@@ -365,7 +365,7 @@ const localCliSteps = [
   },
   {
     label: 'Run: postiz auth:login',
-    code: 'postiz auth:login',
+    code: 'postiz auth:login --auth-server {AUTH_SERVER}',
   },
   {
     label: 'Install the Voholabs skill for your AI agent',
@@ -390,12 +390,16 @@ const ciCliSteps = [
 
 const CliSection = ({ apiKey }: { apiKey: string }) => {
   const t = useT();
+  const { mcpUrl } = useVariables();
   const [mode, setMode] = useState<'local' | 'ci'>('local');
   const [revealed, setRevealed] = useState(false);
 
   const steps =
     mode === 'local'
-      ? localCliSteps.map((step) => ({ ...step }))
+      ? localCliSteps.map((step) => ({
+          ...step,
+          code: step.code.replace('{AUTH_SERVER}', mcpUrl || ''),
+        }))
       : ciCliSteps.map((step) => ({
           ...step,
           code: step.code.replace('{API_KEY}', apiKey),
