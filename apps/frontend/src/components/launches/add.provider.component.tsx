@@ -31,6 +31,7 @@ const ENABLED_PROVIDERS = [
   'linkedin-page',
   'x',
   'threads',
+  'tiktok',
 ];
 
 export const useAddProvider = (update?: () => void, invite?: boolean) => {
