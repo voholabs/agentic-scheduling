@@ -404,9 +404,9 @@ export const TopMenu: FC = () => {
           ))}
         {!!user?.tier?.current && (
           <div
-            className="text-[9px] font-[700] uppercase tracking-[0.1em] text-center leading-none whitespace-nowrap"
+            className="w-full px-[4px] custom:text-[8px] minCustom:text-[9px] font-[700] uppercase tracking-[0.04em] text-center leading-[1.1] break-words overflow-hidden"
             style={{ color: '#E8A33D' }}
-            title="Your plan"
+            title={`Your plan: ${user.tier.current}`}
           >
             {user.tier.current}
           </div>
