@@ -402,6 +402,15 @@ export const TopMenu: FC = () => {
               onClick={item.onClick}
             />
           ))}
+        {!!user?.tier?.current && (
+          <div
+            className="text-[9px] font-[700] uppercase tracking-[0.1em] text-center leading-none whitespace-nowrap"
+            style={{ color: '#E8A33D' }}
+            title="Your plan"
+          >
+            {user.tier.current}
+          </div>
+        )}
       </div>
     </>
   );
