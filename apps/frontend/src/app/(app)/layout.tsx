@@ -42,6 +42,15 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" type="image/png" href="/favicon.png" />
+        {/* Open Graph — provide og:image explicitly so scrapers don't infer it */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Voholabs Studio" />
+        <meta property="og:title" content="Voholabs Studio" />
+        <meta
+          property="og:image"
+          content={`${process.env.FRONTEND_URL}/favicon.png`}
+        />
+        <meta name="twitter:card" content="summary" />
         {!!process.env.DATAFAST_WEBSITE_ID && (
           <Script
             data-website-id={process.env.DATAFAST_WEBSITE_ID}
