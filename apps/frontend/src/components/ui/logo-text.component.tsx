@@ -3,13 +3,13 @@ import React from 'react';
 export const LogoTextComponent = () => {
   return (
     <svg
-      width="170"
+      width="250"
       height="45"
-      viewBox="0 0 1240 330"
+      viewBox="0 0 1830 330"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
-      aria-label="Voholabs"
+      aria-label="Voholabs Studio"
     >
       <rect x="0" y="0" width="340" height="330" rx="58" fill="#FAF9F5" />
       <rect
@@ -30,7 +30,7 @@ export const LogoTextComponent = () => {
         fill="currentColor"
         letterSpacing="-0.02em"
       >
-        voholabs
+        voholabs studio
       </text>
     </svg>
   );
