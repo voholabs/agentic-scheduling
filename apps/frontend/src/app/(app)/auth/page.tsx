@@ -7,7 +7,9 @@ import Link from 'next/link';
 import { getT } from '@gitroom/react/translation/get.translation.service.backend';
 import { LoginWithOidc } from '@gitroom/frontend/components/auth/login.with.oidc';
 export const metadata: Metadata = {
-  title: `${isGeneralServerSide() ? 'Voholabs' : 'Gitroom'} Register`,
+  // `/` redirects here, so this is the title TikTok/Meta app reviewers see on the
+  // homepage tab — it must equal the registered app name exactly.
+  title: isGeneralServerSide() ? 'Voholabs Studio' : 'Gitroom Register',
   description: '',
 };
 export default async function Auth(params: {searchParams: Promise<{provider: string}>}) {

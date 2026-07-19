@@ -16,7 +16,7 @@ import { CreationMethodBadge } from '@gitroom/frontend/components/launches/creat
 
 dayjs.extend(utc);
 export const metadata: Metadata = {
-  title: `${isGeneralServerSide() ? 'Voholabs' : 'Gitroom'} Preview`,
+  title: `${isGeneralServerSide() ? 'Voholabs Studio' : 'Gitroom'} Preview`,
   description: '',
 };
 export default async function Auth(

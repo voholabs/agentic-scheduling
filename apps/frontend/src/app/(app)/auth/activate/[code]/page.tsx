@@ -4,7 +4,7 @@ import { AfterActivate } from '@gitroom/frontend/components/auth/after.activate'
 import { isGeneralServerSide } from '@gitroom/helpers/utils/is.general.server.side';
 export const metadata: Metadata = {
   title: `${
-    isGeneralServerSide() ? 'Voholabs' : 'Gitroom'
+    isGeneralServerSide() ? 'Voholabs Studio' : 'Gitroom'
   } - Activate your account`,
   description: '',
 };
