@@ -78,7 +78,10 @@ async function start() {
 
     Logger.log(`🚀 Backend is running on: http://localhost:${port}`);
   } catch (e) {
+    // Exit instead of lingering: a live-but-unbound process looks "online" to
+    // pm2, so it is never restarted and nginx serves 502s indefinitely.
     Logger.error(`Backend failed to start on port ${port}`, e);
+    process.exit(1);
   }
 }
 
@@ -98,4 +101,7 @@ function checkConfiguration() {
   }
 }
 
-start();
+start().catch((e) => {
+  Logger.error('Backend failed to bootstrap', e);
+  process.exit(1);
+});
