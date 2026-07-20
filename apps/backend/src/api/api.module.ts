@@ -22,6 +22,7 @@ import { CodesService } from '@gitroom/nestjs-libraries/services/codes.service';
 import { CopilotController } from '@gitroom/backend/api/routes/copilot.controller';
 import { PublicController } from '@gitroom/backend/api/routes/public.controller';
 import { RootController } from '@gitroom/backend/api/routes/root.controller';
+import { HealthController } from '@gitroom/backend/api/routes/health.controller';
 import { TrackService } from '@gitroom/nestjs-libraries/track/track.service';
 import { ShortLinkService } from '@gitroom/nestjs-libraries/short-linking/short.link.service';
 import { WebhookController } from '@gitroom/backend/api/routes/webhooks.controller';
@@ -72,6 +73,7 @@ const authenticatedController = [
   imports: [UploadModule],
   controllers: [
     RootController,
+    HealthController,
     StripeController,
     AuthController,
     PublicController,
