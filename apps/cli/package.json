@@ -1,0 +1,22 @@
+{
+  "name": "voholabs-cli",
+  "version": "1.0.0",
+  "description": "Voholabs Studio CLI: schedule posts, threads and carousels from the terminal",
+  "bin": {
+    "voholabs": "index.js"
+  },
+  "files": [
+    "index.js",
+    "voholabs.sh",
+    "install.sh",
+    "README.md"
+  ],
+  "dependencies": {
+    "node-fetch": "^2.7.0",
+    "yargs": "^17.7.2"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "private": true
+}
