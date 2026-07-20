@@ -274,6 +274,26 @@ export class IntegrationService {
   }
 
   async deleteChannel(org: string, id: string) {
+    // Best-effort: revoke the grant on the platform before dropping our copy of
+    // the tokens, so the user's authorization is cleared on their side too.
+    // Never let a failed revoke block the deletion the user asked for.
+    try {
+      const getIntegration = await this._integrationRepository.getIntegrationById(
+        org,
+        id
+      );
+
+      if (getIntegration?.token) {
+        const provider = this._integrationManager.getSocialIntegration(
+          getIntegration.providerIdentifier
+        );
+
+        await provider?.revoke?.(getIntegration.token);
+      }
+    } catch (err) {
+      console.error('Could not revoke access before deleting channel', err);
+    }
+
     return this._integrationRepository.deleteChannel(org, id);
   }
 

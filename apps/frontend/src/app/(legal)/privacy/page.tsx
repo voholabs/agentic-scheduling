@@ -123,10 +123,11 @@ export default function PrivacyPage() {
         </p>
         <p>
           You can disconnect a TikTok channel at any time from the launches
-          screen in Voholabs Studio, or revoke access from within the TikTok app
-          under Settings and privacy. Disconnecting deletes the stored tokens
-          and cached TikTok profile and analytics data within 30 days. Content
-          already published to TikTok remains on TikTok and is governed by
+          screen in Voholabs Studio. Doing so revokes our access token with
+          TikTok and deletes the stored tokens and cached TikTok profile and
+          analytics data within 30 days. You can also revoke access directly
+          from the TikTok app under Settings and privacy. Content already
+          published to TikTok remains on TikTok and is governed by
           TikTok&apos;s own policies.
         </p>
         <p>

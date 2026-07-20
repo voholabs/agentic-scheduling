@@ -48,6 +48,9 @@ export interface IAuthenticator {
     id: string,
     accessToken: string
   ): Promise<{ id: string; url: string }[]>;
+  // Revoke the OAuth grant on the platform side when a channel is deleted.
+  // Optional: providers that do not expose a revoke endpoint simply omit it.
+  revoke?(accessToken: string): Promise<boolean>;
 }
 
 export interface AnalyticsData {

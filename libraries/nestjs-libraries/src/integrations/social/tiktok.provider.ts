@@ -262,6 +262,25 @@ export class TiktokProvider extends SocialAbstract implements SocialProvider {
     return undefined;
   }
 
+  // Revoke the grant on TikTok's side so deleting the channel here also clears
+  // the authorization in the user's TikTok account. Without this, reconnecting
+  // silently re-approves instead of showing the consent screen.
+  async revoke(accessToken: string): Promise<boolean> {
+    const response = await fetch('https://open.tiktokapis.com/v2/oauth/revoke/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        client_key: process.env.TIKTOK_CLIENT_ID!,
+        client_secret: process.env.TIKTOK_CLIENT_SECRET!,
+        token: accessToken,
+      }).toString(),
+    });
+
+    return response.ok;
+  }
+
   async refreshToken(refreshToken: string): Promise<AuthTokenDetails> {
     const value = {
       client_key: process.env.TIKTOK_CLIENT_ID!,
