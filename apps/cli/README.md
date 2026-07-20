@@ -11,6 +11,12 @@ schedule LinkedIn, X, Threads and Facebook posts without opening the UI.
 voholabs auth:login
 ```
 
+Requires **Node 22.12 or newer** and network access to `studio.voholabs.com`. The
+version floor is real rather than cautious: the bundle is CommonJS but depends on
+`node-fetch` v3, which is ESM, so it only loads where `require(esm)` is enabled.
+The installer refuses to install against anything older, because the failure
+otherwise surfaces much later as a broken response body rather than a load error.
+
 That puts the package in `~/.voholabs-cli` and a launcher on `~/.local/bin/voholabs`.
 Both are permanent locations. **Never install this from `/tmp`**: macOS prunes
 `/tmp` after roughly three days, which silently deletes the CLI and its
@@ -96,6 +102,7 @@ Notes that bite:
 | `command not found: voholabs` | `~/.local/bin` not on `PATH` | add the export above to `~/.zshrc` |
 | `Library not loaded: ...libicui18n...dylib` | broken Homebrew node picked up by `env node` | already handled by the launcher; to fix node itself, `brew reinstall node` |
 | `Cannot find module 'yargs'` | package installed somewhere transient, or deps missing | rerun `install.sh` |
+| `Premature close` / `ERR_STREAM_PREMATURE_CLOSE` on any command | `node-fetch` v2 installed instead of v3, or Node older than 22.12 | rerun `install.sh`, it pins v3 and gates the Node version |
 | `No authentication found` | credentials missing or wiped | `voholabs auth:login` |
 
 ## Provenance

@@ -17,7 +17,11 @@ SRC_DIR="$(cd "$(dirname "$0")" && pwd)"
 CLI_DIR="${VOHOLABS_CLI_DIR:-$HOME/.voholabs-cli}"
 BIN_DIR="${VOHOLABS_BIN_DIR:-$HOME/.local/bin}"
 
-# The CLI is a plain CommonJS bundle, so it needs a working Node to install into.
+# The bundle is CommonJS but requires node-fetch v3, which is ESM. That only
+# resolves on Node 22.12+, where require(esm) is enabled. On an older Node the
+# CLI installs fine and then fails at runtime, so gate it here.
+NODE_CHECK='const [a,b]=process.versions.node.split(".").map(Number); process.exit(a>22||(a===22&&b>=12)?0:1)'
+
 pick_node() {
   for candidate in \
     $(ls -1d "$HOME"/.nvm/versions/node/*/bin/node 2>/dev/null | sort -Vr) \
@@ -25,13 +29,13 @@ pick_node() {
     /opt/homebrew/bin/node \
     /usr/local/bin/node
   do
-    [ -n "$candidate" ] && [ -x "$candidate" ] && "$candidate" -e '' >/dev/null 2>&1 && { echo "$candidate"; return 0; }
+    [ -n "$candidate" ] && [ -x "$candidate" ] && "$candidate" -e "$NODE_CHECK" >/dev/null 2>&1 && { echo "$candidate"; return 0; }
   done
   return 1
 }
 
 NODE="$(pick_node)" || {
-  echo "install: no working Node.js found. Install Node 18+ first." >&2
+  echo "install: no usable Node.js found. This CLI needs Node 22.12 or newer." >&2
   exit 1
 }
 NODE_BIN="$(dirname "$NODE")"

@@ -14,8 +14,13 @@ if [ ! -f "$CLI_DIR/index.js" ]; then
   exit 1
 fi
 
+# The CLI depends on node-fetch v3 (ESM) through a CommonJS require, which only
+# works on Node 22.12+, where require(esm) is enabled. This check doubles as a
+# "does this binary actually execute" test.
+NODE_CHECK='const [a,b]=process.versions.node.split(".").map(Number); process.exit(a>22||(a===22&&b>=12)?0:1)'
+
 pick_node() {
-  if [ -n "$VOHOLABS_NODE" ] && [ -x "$VOHOLABS_NODE" ] && "$VOHOLABS_NODE" -e '' >/dev/null 2>&1; then
+  if [ -n "$VOHOLABS_NODE" ] && [ -x "$VOHOLABS_NODE" ] && "$VOHOLABS_NODE" -e "$NODE_CHECK" >/dev/null 2>&1; then
     echo "$VOHOLABS_NODE"; return 0
   fi
   for candidate in \
@@ -24,13 +29,13 @@ pick_node() {
     /opt/homebrew/bin/node \
     /usr/local/bin/node
   do
-    [ -n "$candidate" ] && [ -x "$candidate" ] && "$candidate" -e '' >/dev/null 2>&1 && { echo "$candidate"; return 0; }
+    [ -n "$candidate" ] && [ -x "$candidate" ] && "$candidate" -e "$NODE_CHECK" >/dev/null 2>&1 && { echo "$candidate"; return 0; }
   done
   return 1
 }
 
 NODE="$(pick_node)" || {
-  echo "voholabs: no working Node.js found. Install Node 18+ or set VOHOLABS_NODE=/path/to/node" >&2
+  echo "voholabs: no usable Node.js found (need 22.12+). Install one, or set VOHOLABS_NODE=/path/to/node" >&2
   exit 1
 }
 
