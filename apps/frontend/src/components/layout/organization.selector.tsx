@@ -109,7 +109,7 @@ export const OrganizationSelector: FC<{ asOpenSelect?: boolean }> = ({
             )}
           >
             <div className="py-[8px] px-[12px] text-[11px] font-[600] uppercase tracking-wide text-textItemBlur border-b border-blockSeparator">
-              {t('projects', 'Projects:')}
+              {t('team', 'Team:')}
             </div>
             {data.map((org: { name: string; id: string }) => {
               const isCurrent = org.id === user?.orgId;
